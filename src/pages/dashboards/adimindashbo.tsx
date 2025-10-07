@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/authcontext';
+import { useData } from '../../contexts/datacontext';
 import { 
   Building2, 
   Users, 
