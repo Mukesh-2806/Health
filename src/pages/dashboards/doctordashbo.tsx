@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/authcontext';
 import { useData } from '../../contexts/datacontext';
-import { 
-  Stethoscope, 
-  Calendar, 
-  Users, 
-  Building2, 
-  Bell, 
-  User, 
+import {
+  Stethoscope,
+  Calendar,
+  Users,
+  Building2,
+  Bell,
+  User,
   Clock,
   Phone,
   MessageCircle,
@@ -20,17 +20,23 @@ import {
   Save,
   X,
   Trash2,
-  Shield
+  Shield,
+  Bed,
+  Droplet,
+  Plus,
+  Minus
 } from 'lucide-react';
 
 const DoctorDashboard: React.FC = () => {
   const { user, logout, deleteAccount } = useAuth();
-  const { 
-    hospitals, 
-    doctors, 
+  const {
+    hospitals,
+    doctors,
     updateDoctor,
+    updateHospital,
     patients,
     bloodInventory,
+    getBloodInventoryByHospital,
     appointments,
     updateAppointment,
     notifications,
@@ -41,6 +47,14 @@ const DoctorDashboard: React.FC = () => {
   const [availability, setAvailability] = useState(true);
   const [editingProfile, setEditingProfile] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedBloodType, setSelectedBloodType] = useState('A+');
+
+  const currentHospital = hospitals.find(h => h.id === currentDoctor?.hospitalId) || hospitals[0];
+  const [bedCounts, setBedCounts] = useState({
+    icu: currentHospital?.availableIcuBeds || 0,
+    emergency: currentHospital?.availableEmergencyBeds || 0,
+    general: currentHospital?.availableGeneralBeds || 0
+  });
 
   // Find current doctor data
   const currentDoctor = doctors.find(doc => doc.email === user?.email);
@@ -98,6 +112,33 @@ const DoctorDashboard: React.FC = () => {
 
   const handleAppointmentUpdate = (appointmentId: string, status: string, notes?: string, prescription?: string) => {
     updateAppointment(appointmentId, { status, notes, prescription });
+  };
+
+  const handleBedCountChange = (type: 'icu' | 'emergency' | 'general', delta: number) => {
+    const newCount = Math.max(0, bedCounts[type] + delta);
+    const maxBeds = type === 'icu' ? currentHospital?.icuBeds :
+                    type === 'emergency' ? currentHospital?.emergencyBeds :
+                    currentHospital?.generalBeds || 0;
+
+    if (newCount <= maxBeds) {
+      setBedCounts(prev => ({ ...prev, [type]: newCount }));
+
+      if (currentHospital) {
+        const updateKey = type === 'icu' ? 'availableIcuBeds' :
+                         type === 'emergency' ? 'availableEmergencyBeds' :
+                         'availableGeneralBeds';
+        updateHospital(currentHospital.id, { [updateKey]: newCount });
+      }
+    }
+  };
+
+  const getBedOccupancy = (type: 'icu' | 'emergency' | 'general') => {
+    const total = type === 'icu' ? currentHospital?.icuBeds :
+                  type === 'emergency' ? currentHospital?.emergencyBeds :
+                  currentHospital?.generalBeds || 1;
+    const available = bedCounts[type];
+    const occupied = total - available;
+    return Math.round((occupied / total) * 100);
   };
 
   // Get doctor's appointments
@@ -192,6 +233,150 @@ const DoctorDashboard: React.FC = () => {
                     <p className="text-2xl font-bold text-gray-900">{stats.availableBeds}</p>
                   </div>
                   <Building2 className="h-8 w-8 text-purple-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Bed Management */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Bed className="h-5 w-5 mr-2 text-blue-500" />
+                Bed Availability Management
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* ICU Beds */}
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-red-900">ICU Beds</span>
+                    <span className="text-xs text-red-700">{getBedOccupancy('icu')}% Occupied</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <button
+                      onClick={() => handleBedCountChange('icu', -1)}
+                      className="p-2 bg-red-200 hover:bg-red-300 rounded-lg transition-colors"
+                    >
+                      <Minus className="h-4 w-4 text-red-900" />
+                    </button>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-red-900">{bedCounts.icu}</div>
+                      <div className="text-xs text-red-700">of {currentHospital?.icuBeds || 0}</div>
+                    </div>
+                    <button
+                      onClick={() => handleBedCountChange('icu', 1)}
+                      className="p-2 bg-red-200 hover:bg-red-300 rounded-lg transition-colors"
+                    >
+                      <Plus className="h-4 w-4 text-red-900" />
+                    </button>
+                  </div>
+                  <div className="w-full bg-red-200 rounded-full h-2">
+                    <div
+                      className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${getBedOccupancy('icu')}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Emergency Beds */}
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-orange-900">Emergency Beds</span>
+                    <span className="text-xs text-orange-700">{getBedOccupancy('emergency')}% Occupied</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <button
+                      onClick={() => handleBedCountChange('emergency', -1)}
+                      className="p-2 bg-orange-200 hover:bg-orange-300 rounded-lg transition-colors"
+                    >
+                      <Minus className="h-4 w-4 text-orange-900" />
+                    </button>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-orange-900">{bedCounts.emergency}</div>
+                      <div className="text-xs text-orange-700">of {currentHospital?.emergencyBeds || 0}</div>
+                    </div>
+                    <button
+                      onClick={() => handleBedCountChange('emergency', 1)}
+                      className="p-2 bg-orange-200 hover:bg-orange-300 rounded-lg transition-colors"
+                    >
+                      <Plus className="h-4 w-4 text-orange-900" />
+                    </button>
+                  </div>
+                  <div className="w-full bg-orange-200 rounded-full h-2">
+                    <div
+                      className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${getBedOccupancy('emergency')}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* General Ward Beds */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-blue-900">General Ward</span>
+                    <span className="text-xs text-blue-700">{getBedOccupancy('general')}% Occupied</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <button
+                      onClick={() => handleBedCountChange('general', -1)}
+                      className="p-2 bg-blue-200 hover:bg-blue-300 rounded-lg transition-colors"
+                    >
+                      <Minus className="h-4 w-4 text-blue-900" />
+                    </button>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-900">{bedCounts.general}</div>
+                      <div className="text-xs text-blue-700">of {currentHospital?.generalBeds || 0}</div>
+                    </div>
+                    <button
+                      onClick={() => handleBedCountChange('general', 1)}
+                      className="p-2 bg-blue-200 hover:bg-blue-300 rounded-lg transition-colors"
+                    >
+                      <Plus className="h-4 w-4 text-blue-900" />
+                    </button>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${getBedOccupancy('general')}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Blood Inventory Search */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Droplet className="h-5 w-5 mr-2 text-red-500" />
+                Blood Inventory
+              </h3>
+              <div className="flex items-center space-x-4 mb-4">
+                <label className="text-sm font-medium text-gray-700">Select Blood Type:</label>
+                <select
+                  value={selectedBloodType}
+                  onChange={(e) => setSelectedBloodType(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                >
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Available Units</p>
+                    <p className="text-3xl font-bold text-red-900">
+                      {currentHospital ? (getBloodInventoryByHospital(currentHospital.id)[selectedBloodType]?.units || 0) : 0}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Last Updated: {currentHospital ? (getBloodInventoryByHospital(currentHospital.id)[selectedBloodType]?.lastUpdated || 'N/A') : 'N/A'}
+                    </p>
+                  </div>
+                  <Droplet className="h-16 w-16 text-red-500 opacity-20" />
                 </div>
               </div>
             </div>

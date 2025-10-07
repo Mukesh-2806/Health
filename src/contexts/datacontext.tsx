@@ -16,6 +16,8 @@ interface Hospital {
   availableIcuBeds: number;
   emergencyBeds: number;
   availableEmergencyBeds: number;
+  generalBeds: number;
+  availableGeneralBeds: number;
   location?: { latitude: number; longitude: number };
   adminId: string;
   registrationDate: string;
@@ -216,7 +218,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const savedAppointments = localStorage.getItem('wizards_appointments');
     const savedNotifications = localStorage.getItem('wizards_notifications');
 
-    if (savedHospitals) setHospitals(JSON.parse(savedHospitals));
+    if (savedHospitals) {
+      const parsed = JSON.parse(savedHospitals);
+      const migrated = parsed.map((h: Hospital) => ({
+        ...h,
+        generalBeds: h.generalBeds || Math.floor((h.totalBeds || 100) * 0.7),
+        availableGeneralBeds: h.availableGeneralBeds !== undefined ? h.availableGeneralBeds : Math.floor((h.totalBeds || 100) * 0.5)
+      }));
+      setHospitals(migrated);
+    }
     if (savedDoctors) setDoctors(JSON.parse(savedDoctors));
     if (savedPatients) setPatients(JSON.parse(savedPatients));
     if (savedBloodInventory) setBloodInventory(JSON.parse(savedBloodInventory));

@@ -592,11 +592,51 @@ const PatientDashboard: React.FC = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <h5 className="font-medium text-sm text-gray-700 mb-2">Bed Availability</h5>
-                          <div className="text-sm text-gray-600">
-                            <p>Total Beds: <span className="font-semibold">{hospital.totalBeds}</span></p>
-                            <p>Available: <span className="font-semibold text-green-600">{hospital.availableBeds}</span></p>
-                            <p>ICU: <span className="font-semibold text-yellow-600">{hospital.availableIcuBeds}</span></p>
-                            <p>Emergency: <span className="font-semibold text-red-600">{hospital.availableEmergencyBeds}</span></p>
+                          <div className="text-sm text-gray-600 space-y-2">
+                            <div>
+                              <div className="flex justify-between items-center mb-1">
+                                <span>ICU:</span>
+                                <span className="font-semibold text-red-600">
+                                  {hospital.availableIcuBeds}/{hospital.icuBeds}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div
+                                  className="bg-red-600 h-1.5 rounded-full"
+                                  style={{ width: `${Math.round(((hospital.icuBeds - hospital.availableIcuBeds) / hospital.icuBeds) * 100)}%` }}
+                                ></div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between items-center mb-1">
+                                <span>Emergency:</span>
+                                <span className="font-semibold text-orange-600">
+                                  {hospital.availableEmergencyBeds}/{hospital.emergencyBeds}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div
+                                  className="bg-orange-600 h-1.5 rounded-full"
+                                  style={{ width: `${Math.round(((hospital.emergencyBeds - hospital.availableEmergencyBeds) / hospital.emergencyBeds) * 100)}%` }}
+                                ></div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between items-center mb-1">
+                                <span>General:</span>
+                                <span className="font-semibold text-blue-600">
+                                  {hospital.availableGeneralBeds || 0}/{hospital.generalBeds || 0}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                <div
+                                  className="bg-blue-600 h-1.5 rounded-full"
+                                  style={{ width: `${hospital.generalBeds ? Math.round(((hospital.generalBeds - (hospital.availableGeneralBeds || 0)) / hospital.generalBeds) * 100) : 0}%` }}
+                                ></div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         
