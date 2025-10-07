@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/authcontext';
 import { Building2, ArrowLeft, Mail, Lock, User, Phone, Trash2, Shield } from 'lucide-react';
 
 const AdminAuth: React.FC = () => {

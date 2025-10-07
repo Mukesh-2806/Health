@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/authcontext';
 import { Heart, ArrowLeft, Mail, Lock, User, Phone, Calendar, Trash2, Shield } from 'lucide-react';
 
 const PatientAuth: React.FC = () => {

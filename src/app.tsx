@@ -1,15 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import PatientAuth from './pages/auth/PatientAuth';
-import DoctorAuth from './pages/auth/DoctorAuth';
-import AdminAuth from './pages/auth/AdminAuth';
-import PatientDashboard from './pages/dashboards/PatientDashboard';
-import DoctorDashboard from './pages/dashboards/DoctorDashboard';
-import AdminDashboard from './pages/dashboards/AdminDashboard';
-import { AuthProvider } from './contexts/AuthContext';
-import { DataProvider } from './contexts/DataContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import LandingPage from './pages/landingPage';
+import PatientAuth from './pages/auth/patientauth';
+import DoctorAuth from './pages/auth/doctorauth';
+import AdminAuth from './pages/auth/adminauth';
+import PatientDashboard from './pages/dashboards/patientdashbo';
+import DoctorDashboard from './pages/dashboards/doctordashbo';
+import AdminDashboard from './pages/dashboards/adimindashbo';
+import { AuthProvider } from './contexts/authcontext';
+import { DataProvider } from './contexts/datacontext';
+import ProtectedRoute from './components/protectedroute';
 
 function App() {
   return (
