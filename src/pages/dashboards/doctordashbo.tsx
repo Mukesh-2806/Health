@@ -1,0 +1,506 @@
+import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../contexts/DataContext';
+import { 
+  Stethoscope, 
+  Calendar, 
+  Users, 
+  Building2, 
+  Bell, 
+  User, 
+  Clock,
+  Phone,
+  MessageCircle,
+  FileText,
+  Activity,
+  LogOut,
+  CheckCircle,
+  XCircle,
+  Edit3,
+  Save,
+  X,
+  Trash2,
+  Shield
+} from 'lucide-react';
+
+const DoctorDashboard: React.FC = () => {
+  const { user, logout, deleteAccount } = useAuth();
+  const { 
+    hospitals, 
+    doctors, 
+    updateDoctor,
+    patients,
+    bloodInventory,
+    appointments,
+    updateAppointment,
+    notifications,
+    markNotificationRead
+  } = useData();
+
+  const [activeTab, setActiveTab] = useState('overview');
+  const [availability, setAvailability] = useState(true);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Find current doctor data
+  const currentDoctor = doctors.find(doc => doc.email === user?.email);
+  const [doctorProfile, setDoctorProfile] = useState(currentDoctor || {
+    id: '',
+    userId: '',
+    hospitalId: '',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
+    licenseNo: '',
+    specialization: '',
+    experienceYears: 0,
+    consultationFee: 0,
+    isAvailable: true,
+    isActive: true,
+    rating: 5.0,
+    totalPatients: 0,
+  });
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: Activity },
+    { id: 'appointments', label: 'Appointments', icon: Calendar },
+    { id: 'patients', label: 'Patients', icon: Users },
+    { id: 'hospital', label: 'Hospital Info', icon: Building2 },
+    { id: 'profile', label: 'Profile', icon: User },
+  ];
+
+  const handleToggleAvailability = () => {
+    const newAvailability = !availability;
+    setAvailability(newAvailability);
+    if (currentDoctor) {
+      updateDoctor(currentDoctor.id, { isAvailable: newAvailability });
+    }
+  };
+
+  const handleSaveProfile = () => {
+    if (currentDoctor) {
+      updateDoctor(currentDoctor.id, doctorProfile);
+    }
+    setEditingProfile(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (user) {
+      const result = await deleteAccount(user.id);
+      if (result.success) {
+        alert('Account deleted successfully');
+      } else {
+        alert(result.message || 'Failed to delete account');
+      }
+    }
+    setShowDeleteModal(false);
+  };
+
+  const handleAppointmentUpdate = (appointmentId: string, status: string, notes?: string, prescription?: string) => {
+    updateAppointment(appointmentId, { status, notes, prescription });
+  };
+
+  // Get doctor's appointments
+  const doctorAppointments = appointments.filter(apt => 
+    currentDoctor && apt.doctorId === currentDoctor.id
+  );
+
+  // Get doctor's notifications
+  const doctorNotifications = notifications.filter(n => 
+    currentDoctor && n.userId === currentDoctor.id
+  );
+
+  // Get today's appointments
+  const todayAppointments = doctorAppointments.filter(apt => 
+    apt.date === new Date().toISOString().split('T')[0]
+  );
+
+  const getStats = () => {
+    return {
+      todayAppointments: todayAppointments.length,
+      totalPatients: doctorAppointments.filter(apt => apt.status === 'completed').length,
+      pendingReviews: doctorAppointments.filter(apt => apt.status === 'confirmed').length,
+      availableBeds: hospitals[0]?.availableBeds || 0,
+    };
+  };
+
+  const stats = getStats();
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <div className="space-y-6 animate-fade-in">
+            {/* Welcome Section */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl transform transition-all duration-300 hover:scale-105">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name}!</h2>
+                  <p className="opacity-90">{hospitals[0]?.name || 'Hospital'} • {currentDoctor?.specialization || 'Doctor'}</p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className={`w-3 h-3 rounded-full ${availability ? 'bg-green-300' : 'bg-red-300'}`}></div>
+                    <span className="text-sm">{availability ? 'Available' : 'Unavailable'}</span>
+                  </div>
+                  <button
+                    onClick={handleToggleAvailability}
+                    className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm transition-all duration-300 transform hover:scale-105"
+                  >
+                    Toggle Status
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Today's Appointments</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.todayAppointments}</p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-blue-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Total Patients</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalPatients}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-green-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Pending Reviews</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.pendingReviews}</p>
+                  </div>
+                  <FileText className="h-8 w-8 text-orange-500" />
+                </div>
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Available Beds</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.availableBeds}</p>
+                  </div>
+                  <Building2 className="h-8 w-8 text-purple-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Today's Schedule */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Clock className="h-5 w-5 mr-2 text-blue-500" />
+                Today's Schedule
+              </h3>
+              <div className="space-y-4">
+                {todayAppointments.length > 0 ? (
+                  todayAppointments.map((appointment) => (
+                    <div key={appointment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg transition-all duration-300 hover:bg-gray-100">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-sm font-medium">{appointment.time}</div>
+                        <div>
+                          <p className="font-medium">{appointment.patientName}</p>
+                          <p className="text-sm text-gray-600">{appointment.type}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {appointment.status === 'completed' && <CheckCircle className="h-5 w-5 text-green-500" />}
+                        {appointment.status === 'confirmed' && <Clock className="h-5 w-5 text-orange-500" />}
+                        {appointment.status === 'pending' && <div className="w-5 h-5 border-2 border-gray-300 rounded-full"></div>}
+                        <span className="text-sm capitalize text-gray-600">{appointment.status}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No appointments scheduled for today</p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'profile':
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Doctor Profile</h2>
+              {!editingProfile ? (
+                <button
+                  onClick={() => {
+                    setDoctorProfile(currentDoctor || doctorProfile);
+                    setEditingProfile(true);
+                  }}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
+                >
+                  <Edit3 className="h-4 w-4" />
+                  <span>Edit</span>
+                </button>
+              ) : (
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleSaveProfile}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
+                  >
+                    <Save className="h-4 w-4" />
+                    <span>Save</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingProfile(false);
+                      setDoctorProfile(currentDoctor || doctorProfile);
+                    }}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
+                  >
+                    <X className="h-4 w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:shadow-lg">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                  <Stethoscope className="h-10 w-10 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold">{currentDoctor?.name || user?.name}</h3>
+                  <p className="text-gray-600">{currentDoctor?.email || user?.email}</p>
+                  <p className="text-sm text-gray-500">License: {currentDoctor?.licenseNo || 'Not set'}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-3">Professional Information</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                      {editingProfile ? (
+                        <select
+                          value={doctorProfile.specialization}
+                          onChange={(e) => setDoctorProfile({...doctorProfile, specialization: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                        >
+                          <option value="">Select Specialization</option>
+                          <option value="General Medicine">General Medicine</option>
+                          <option value="Cardiology">Cardiology</option>
+                          <option value="Neurology">Neurology</option>
+                          <option value="Orthopedics">Orthopedics</option>
+                          <option value="Pediatrics">Pediatrics</option>
+                          <option value="Surgery">Surgery</option>
+                          <option value="Dermatology">Dermatology</option>
+                          <option value="Psychiatry">Psychiatry</option>
+                        </select>
+                      ) : (
+                        <p className="text-gray-900">{currentDoctor?.specialization || 'Not set'}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Years)</label>
+                      {editingProfile ? (
+                        <input
+                          type="number"
+                          value={doctorProfile.experienceYears}
+                          onChange={(e) => setDoctorProfile({...doctorProfile, experienceYears: parseInt(e.target.value) || 0})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                        />
+                      ) : (
+                        <p className="text-gray-900">{currentDoctor?.experienceYears || 0} years</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Fee</label>
+                      {editingProfile ? (
+                        <input
+                          type="number"
+                          value={doctorProfile.consultationFee}
+                          onChange={(e) => setDoctorProfile({...doctorProfile, consultationFee: parseInt(e.target.value) || 0})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                        />
+                      ) : (
+                        <p className="text-gray-900">₹{currentDoctor?.consultationFee || 0}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-3">Contact Information</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      {editingProfile ? (
+                        <input
+                          type="tel"
+                          value={doctorProfile.phone}
+                          onChange={(e) => setDoctorProfile({...doctorProfile, phone: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                        />
+                      ) : (
+                        <p className="text-gray-900">{currentDoctor?.phone || user?.phone || 'Not set'}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Hospital</label>
+                      <p className="text-gray-900">{hospitals[0]?.name || 'Not set'}</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                      <p className="text-gray-900">{currentDoctor?.specialization || 'Not set'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t flex justify-between">
+                <button 
+                  onClick={logout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+                
+                <button 
+                  onClick={() => setShowDeleteModal(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete Account</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="animate-fade-in">
+            <p className="text-gray-500 text-center py-8">Content for {activeTab} tab</p>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <div className="bg-green-100 p-2 rounded-lg">
+                <Stethoscope className="h-6 w-6 text-green-600" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">HWM Doctor Portal</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className={`w-3 h-3 rounded-full ${availability ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <span className="text-sm">{availability ? 'Available' : 'Unavailable'}</span>
+              </div>
+              <div className="relative">
+                <Bell className="h-6 w-6 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
+                {doctorNotifications.filter(n => !n.isRead).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                    {doctorNotifications.filter(n => !n.isRead).length}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <User className="h-6 w-6 text-gray-400" />
+                <span className="text-sm font-medium">{user?.name}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8 overflow-x-auto">
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 px-3 py-4 border-b-2 text-sm font-medium transition-all duration-300 whitespace-nowrap transform hover:scale-105 ${
+                    activeTab === tab.id
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <IconComponent className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {renderTabContent()}
+      </main>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+            <h3 className="text-lg font-semibold mb-4 text-red-600 flex items-center">
+              <Shield className="h-5 w-5 mr-2" />
+              Delete Account
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.
+            </p>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleDeleteAccount}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition-colors"
+              >
+                Delete Account
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default DoctorDashboard;
