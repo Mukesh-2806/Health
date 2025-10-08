@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/authcontext';
 import { useData } from '../../contexts/datacontext';
+import { useLanguage } from '../../contexts/languagecontext';
+import LanguageSelector from '../../components/languageselector';
 import { 
   Building2, 
   Users, 
@@ -25,6 +27,7 @@ import {
 
 const AdminDashboard: React.FC = () => {
   const { user, logout, deleteAccount } = useAuth();
+  const { t } = useLanguage();
   const { 
     hospitals,
     addHospital,
@@ -89,12 +92,12 @@ const AdminDashboard: React.FC = () => {
   });
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Activity },
-    { id: 'hospital', label: 'Hospital Management', icon: Building2 },
-    { id: 'doctors', label: 'Doctors', icon: Users },
-    { id: 'appointments', label: 'Appointments', icon: Calendar },
-    { id: 'blood', label: 'Blood Bank', icon: Droplet },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'overview', label: t('overview'), icon: Activity },
+    { id: 'hospital', label: t('hospitalManagement'), icon: Building2 },
+    { id: 'doctors', label: t('doctorManagement'), icon: Users },
+    { id: 'appointments', label: t('appointments'), icon: Calendar },
+    { id: 'blood', label: t('bloodBank'), icon: Droplet },
+    { id: 'profile', label: t('profile'), icon: User },
   ];
 
   const handleAddDoctor = () => {
@@ -788,6 +791,7 @@ const AdminDashboard: React.FC = () => {
               <h1 className="text-xl font-bold text-gray-900">HWM Admin Portal</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <LanguageSelector />
               <div className="relative">
                 <Bell className="h-6 w-6 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
                 {adminNotifications.filter(n => !n.isRead).length > 0 && (

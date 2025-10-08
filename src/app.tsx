@@ -9,13 +9,15 @@ import DoctorDashboard from './pages/dashboards/doctordashbo';
 import AdminDashboard from './pages/dashboards/adimindashbo';
 import { AuthProvider } from './contexts/authcontext';
 import { DataProvider } from './contexts/datacontext';
+import { LanguageProvider } from './contexts/languagecontext';
 import ProtectedRoute from './components/protectedroute';
 
 function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <Router>
+    <LanguageProvider>
+      <AuthProvider>
+        <DataProvider>
+          <Router>
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/" element={<LandingPage />} />
@@ -48,9 +50,10 @@ function App() {
               />
             </Routes>
           </div>
-        </Router>
-      </DataProvider>
-    </AuthProvider>
+          </Router>
+        </DataProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

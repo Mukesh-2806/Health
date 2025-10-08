@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/authcontext';
 import { useData } from '../../contexts/datacontext';
+import { useLanguage } from '../../contexts/languagecontext';
+import LanguageSelector from '../../components/languageselector';
 import {
   Stethoscope,
   Calendar,
@@ -29,6 +31,7 @@ import {
 
 const DoctorDashboard: React.FC = () => {
   const { user, logout, deleteAccount } = useAuth();
+  const { t } = useLanguage();
   const {
     hospitals,
     doctors,
@@ -76,11 +79,11 @@ const DoctorDashboard: React.FC = () => {
   });
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Activity },
-    { id: 'appointments', label: 'Appointments', icon: Calendar },
-    { id: 'patients', label: 'Patients', icon: Users },
-    { id: 'hospital', label: 'Hospital Info', icon: Building2 },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'overview', label: t('overview'), icon: Activity },
+    { id: 'appointments', label: t('appointments'), icon: Calendar },
+    { id: 'patients', label: t('patients'), icon: Users },
+    { id: 'hospital', label: t('hospitalInfo'), icon: Building2 },
+    { id: 'profile', label: t('profile'), icon: User },
   ];
 
   const handleToggleAvailability = () => {
@@ -176,19 +179,19 @@ const DoctorDashboard: React.FC = () => {
             <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl transform transition-all duration-300 hover:scale-105">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name}!</h2>
+                  <h2 className="text-2xl font-bold mb-2">{t('welcome')}, {user?.name}!</h2>
                   <p className="opacity-90">{hospitals[0]?.name || 'Hospital'} • {currentDoctor?.specialization || 'Doctor'}</p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center space-x-2 mb-2">
                     <div className={`w-3 h-3 rounded-full ${availability ? 'bg-green-300' : 'bg-red-300'}`}></div>
-                    <span className="text-sm">{availability ? 'Available' : 'Unavailable'}</span>
+                    <span className="text-sm">{availability ? t('available') : t('unavailable')}</span>
                   </div>
                   <button
                     onClick={handleToggleAvailability}
                     className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm transition-all duration-300 transform hover:scale-105"
                   >
-                    Toggle Status
+                    {t('toggleStatus')}
                   </button>
                 </div>
               </div>
@@ -199,7 +202,7 @@ const DoctorDashboard: React.FC = () => {
               <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Today's Appointments</p>
+                    <p className="text-sm text-gray-600">{t('todayAppointments')}</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.todayAppointments}</p>
                   </div>
                   <Calendar className="h-8 w-8 text-blue-500" />
@@ -209,7 +212,7 @@ const DoctorDashboard: React.FC = () => {
               <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Patients</p>
+                    <p className="text-sm text-gray-600">{t('totalPatients')}</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.totalPatients}</p>
                   </div>
                   <Users className="h-8 w-8 text-green-500" />
@@ -219,7 +222,7 @@ const DoctorDashboard: React.FC = () => {
               <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Pending Reviews</p>
+                    <p className="text-sm text-gray-600">{t('pendingReviews')}</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.pendingReviews}</p>
                   </div>
                   <FileText className="h-8 w-8 text-orange-500" />
@@ -229,7 +232,7 @@ const DoctorDashboard: React.FC = () => {
               <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Available Beds</p>
+                    <p className="text-sm text-gray-600">{t('availableBeds')}</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.availableBeds}</p>
                   </div>
                   <Building2 className="h-8 w-8 text-purple-500" />
@@ -241,14 +244,14 @@ const DoctorDashboard: React.FC = () => {
             <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:shadow-lg">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <Bed className="h-5 w-5 mr-2 text-blue-500" />
-                Bed Availability Management
+                {t('bedManagement')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* ICU Beds */}
                 <div className="bg-red-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-red-900">ICU Beds</span>
-                    <span className="text-xs text-red-700">{getBedOccupancy('icu')}% Occupied</span>
+                    <span className="text-sm font-medium text-red-900">{t('icuBeds')}</span>
+                    <span className="text-xs text-red-700">{getBedOccupancy('icu')}% {t('occupied')}</span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <button
@@ -279,8 +282,8 @@ const DoctorDashboard: React.FC = () => {
                 {/* Emergency Beds */}
                 <div className="bg-orange-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-orange-900">Emergency Beds</span>
-                    <span className="text-xs text-orange-700">{getBedOccupancy('emergency')}% Occupied</span>
+                    <span className="text-sm font-medium text-orange-900">{t('emergencyBeds')}</span>
+                    <span className="text-xs text-orange-700">{getBedOccupancy('emergency')}% {t('occupied')}</span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <button
@@ -311,8 +314,8 @@ const DoctorDashboard: React.FC = () => {
                 {/* General Ward Beds */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-blue-900">General Ward</span>
-                    <span className="text-xs text-blue-700">{getBedOccupancy('general')}% Occupied</span>
+                    <span className="text-sm font-medium text-blue-900">{t('generalWard')}</span>
+                    <span className="text-xs text-blue-700">{getBedOccupancy('general')}% {t('occupied')}</span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <button
@@ -346,10 +349,10 @@ const DoctorDashboard: React.FC = () => {
             <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:shadow-lg">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <Droplet className="h-5 w-5 mr-2 text-red-500" />
-                Blood Inventory
+                {t('bloodInventory')}
               </h3>
               <div className="flex items-center space-x-4 mb-4">
-                <label className="text-sm font-medium text-gray-700">Select Blood Type:</label>
+                <label className="text-sm font-medium text-gray-700">{t('selectBloodType')}:</label>
                 <select
                   value={selectedBloodType}
                   onChange={(e) => setSelectedBloodType(e.target.value)}
@@ -368,12 +371,12 @@ const DoctorDashboard: React.FC = () => {
               <div className="bg-red-50 p-4 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Available Units</p>
+                    <p className="text-sm text-gray-600">{t('availableUnits')}</p>
                     <p className="text-3xl font-bold text-red-900">
                       {currentHospital ? (getBloodInventoryByHospital(currentHospital.id)[selectedBloodType]?.units || 0) : 0}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Last Updated: {currentHospital ? (getBloodInventoryByHospital(currentHospital.id)[selectedBloodType]?.lastUpdated || 'N/A') : 'N/A'}
+                      {t('lastUpdated')}: {currentHospital ? (getBloodInventoryByHospital(currentHospital.id)[selectedBloodType]?.lastUpdated || 'N/A') : 'N/A'}
                     </p>
                   </div>
                   <Droplet className="h-16 w-16 text-red-500 opacity-20" />
@@ -385,7 +388,7 @@ const DoctorDashboard: React.FC = () => {
             <div className="bg-white p-6 rounded-xl shadow-sm border transform transition-all duration-300 hover:shadow-lg">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
                 <Clock className="h-5 w-5 mr-2 text-blue-500" />
-                Today's Schedule
+                {t('todaySchedule')}
               </h3>
               <div className="space-y-4">
                 {todayAppointments.length > 0 ? (
@@ -407,7 +410,7 @@ const DoctorDashboard: React.FC = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center py-4">No appointments scheduled for today</p>
+                  <p className="text-gray-500 text-center py-4">{t('noAppointments')}</p>
                 )}
               </div>
             </div>
@@ -418,7 +421,7 @@ const DoctorDashboard: React.FC = () => {
         return (
           <div className="space-y-6 animate-fade-in">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Doctor Profile</h2>
+              <h2 className="text-2xl font-bold">{t('doctorProfile')}</h2>
               {!editingProfile ? (
                 <button
                   onClick={() => {
@@ -428,7 +431,7 @@ const DoctorDashboard: React.FC = () => {
                   className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
                 >
                   <Edit3 className="h-4 w-4" />
-                  <span>Edit</span>
+                  <span>{t('edit')}</span>
                 </button>
               ) : (
                 <div className="flex space-x-2">
@@ -437,7 +440,7 @@ const DoctorDashboard: React.FC = () => {
                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
                   >
                     <Save className="h-4 w-4" />
-                    <span>Save</span>
+                    <span>{t('save')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -447,7 +450,7 @@ const DoctorDashboard: React.FC = () => {
                     className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
                   >
                     <X className="h-4 w-4" />
-                    <span>Cancel</span>
+                    <span>{t('cancel')}</span>
                   </button>
                 </div>
               )}
@@ -467,33 +470,33 @@ const DoctorDashboard: React.FC = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold mb-3">Professional Information</h4>
+                  <h4 className="font-semibold mb-3">{t('professionalInfo')}</h4>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('specialization')}</label>
                       {editingProfile ? (
                         <select
                           value={doctorProfile.specialization}
                           onChange={(e) => setDoctorProfile({...doctorProfile, specialization: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
                         >
-                          <option value="">Select Specialization</option>
-                          <option value="General Medicine">General Medicine</option>
-                          <option value="Cardiology">Cardiology</option>
-                          <option value="Neurology">Neurology</option>
-                          <option value="Orthopedics">Orthopedics</option>
-                          <option value="Pediatrics">Pediatrics</option>
-                          <option value="Surgery">Surgery</option>
-                          <option value="Dermatology">Dermatology</option>
-                          <option value="Psychiatry">Psychiatry</option>
+                          <option value="">{t('selectSpecialization')}</option>
+                          <option value="General Medicine">{t('generalMedicine')}</option>
+                          <option value="Cardiology">{t('cardiology')}</option>
+                          <option value="Neurology">{t('neurology')}</option>
+                          <option value="Orthopedics">{t('orthopedics')}</option>
+                          <option value="Pediatrics">{t('pediatrics')}</option>
+                          <option value="Surgery">{t('surgery')}</option>
+                          <option value="Dermatology">{t('dermatology')}</option>
+                          <option value="Psychiatry">{t('psychiatry')}</option>
                         </select>
                       ) : (
-                        <p className="text-gray-900">{currentDoctor?.specialization || 'Not set'}</p>
+                        <p className="text-gray-900">{currentDoctor?.specialization || t('notSet')}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Years)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('experience')} ({t('years')})</label>
                       {editingProfile ? (
                         <input
                           type="number"
@@ -502,12 +505,12 @@ const DoctorDashboard: React.FC = () => {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
                         />
                       ) : (
-                        <p className="text-gray-900">{currentDoctor?.experienceYears || 0} years</p>
+                        <p className="text-gray-900">{currentDoctor?.experienceYears || 0} {t('years')}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Fee</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('consultationFee')}</label>
                       {editingProfile ? (
                         <input
                           type="number"
@@ -523,10 +526,10 @@ const DoctorDashboard: React.FC = () => {
                 </div>
                 
                 <div>
-                  <h4 className="font-semibold mb-3">Contact Information</h4>
+                  <h4 className="font-semibold mb-3">{t('contactInfo')}</h4>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')}</label>
                       {editingProfile ? (
                         <input
                           type="tel"
@@ -535,18 +538,18 @@ const DoctorDashboard: React.FC = () => {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
                         />
                       ) : (
-                        <p className="text-gray-900">{currentDoctor?.phone || user?.phone || 'Not set'}</p>
+                        <p className="text-gray-900">{currentDoctor?.phone || user?.phone || t('notSet')}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Hospital</label>
-                      <p className="text-gray-900">{hospitals[0]?.name || 'Not set'}</p>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('hospital')}</label>
+                      <p className="text-gray-900">{hospitals[0]?.name || t('notSet')}</p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                      <p className="text-gray-900">{currentDoctor?.specialization || 'Not set'}</p>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('department')}</label>
+                      <p className="text-gray-900">{currentDoctor?.specialization || t('notSet')}</p>
                     </div>
                   </div>
                 </div>
@@ -558,7 +561,7 @@ const DoctorDashboard: React.FC = () => {
                   className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
+                  <span>{t('logout')}</span>
                 </button>
                 
                 <button 
@@ -566,7 +569,7 @@ const DoctorDashboard: React.FC = () => {
                   className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 transform hover:scale-105"
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span>Delete Account</span>
+                  <span>{t('deleteAccount')}</span>
                 </button>
               </div>
             </div>
@@ -595,9 +598,10 @@ const DoctorDashboard: React.FC = () => {
               <h1 className="text-xl font-bold text-gray-900">HWM Doctor Portal</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <LanguageSelector />
               <div className="flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${availability ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                <span className="text-sm">{availability ? 'Available' : 'Unavailable'}</span>
+                <span className="text-sm">{availability ? t('available') : t('unavailable')}</span>
               </div>
               <div className="relative">
                 <Bell className="h-6 w-6 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />

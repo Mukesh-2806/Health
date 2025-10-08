@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/authcontext';
 import { useData } from '../../contexts/datacontext';
+import { useLanguage } from '../../contexts/languagecontext';
+import LanguageSelector from '../../components/languageselector';
 import { 
   Home, 
   Calendar, 
@@ -27,6 +29,7 @@ import {
 
 const PatientDashboard: React.FC = () => {
   const { user, logout, updateUser, deleteAccount } = useAuth();
+  const { t } = useLanguage();
   const { 
     hospitals,
     doctors,
@@ -189,12 +192,12 @@ const PatientDashboard: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'appointments', label: 'Appointments', icon: Calendar },
-    { id: 'hospitals', label: 'Hospitals', icon: Building2 },
-    { id: 'doctors', label: 'Doctors', icon: Stethoscope },
+    { id: 'home', label: t('home'), icon: Home },
+    { id: 'appointments', label: t('appointments'), icon: Calendar },
+    { id: 'hospitals', label: t('hospital') + 's', icon: Building2 },
+    { id: 'doctors', label: t('findDoctor'), icon: Stethoscope },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'profile', label: t('profile'), icon: User },
   ];
 
   const handleSymptomCheck = () => {
@@ -1070,6 +1073,7 @@ const PatientDashboard: React.FC = () => {
               <h1 className="text-xl font-bold text-gray-900">WIZARDS Patient Portal</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <LanguageSelector />
               <div className="relative">
                 <Bell className="h-6 w-6 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
                 {patientNotifications.filter(n => !n.isRead).length > 0 && (
